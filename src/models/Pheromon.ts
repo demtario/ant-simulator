@@ -10,10 +10,10 @@ export class Pheromon implements Entity {
   public x: number
   public y: number
 
-  public strength = 100
+  public lifeTime = 0
+  public color: string
   public type: PheromonType
 
-  public static maxStrength = 100
   public static maxLifeTime = 10 * 1000
 
   readonly size = 2
@@ -24,19 +24,21 @@ export class Pheromon implements Entity {
     this.x = x
     this.y = y
     this.type = type
+    this.color = this.type === PheromonType.Food ? this.foodColor : this.homeColor
   }
 
   update(_ctx: GameContext, deltaTime: number) {
-    this.strength -= (deltaTime / Pheromon.maxLifeTime) * Pheromon.maxStrength
+    this.lifeTime += deltaTime
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const baseColor = this.type === PheromonType.Food ? this.foodColor : this.homeColor
-    const opacity = Math.floor((this.strength / Pheromon.maxStrength) * 256)
+    const opacity = Math.floor(
+      (Math.max(Pheromon.maxLifeTime - this.lifeTime, 0) / Pheromon.maxLifeTime) * 256
+    )
       .toString(16)
       .padStart(2, '0')
 
-    ctx.fillStyle = baseColor + opacity
+    ctx.fillStyle = this.color + opacity
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
     ctx.fill()

@@ -1,5 +1,7 @@
 # Ant Simulator
 
+Inspiration: [Coding Adventure: Ant and Slime Simulations](https://www.youtube.com/watch?v=X-iSQQgOd1A)
+
 ## Installation
 
 ```bash

@@ -19,9 +19,9 @@ export class Ant implements Entity {
 
   public timeFromLastPheromon: number = 0
 
-  readonly maxSpeed = 20
+  readonly maxSpeed = 12
   readonly wardeningStrength = 8
-  readonly pheromonTimeDelay = 200
+  readonly pheromonTimeDelay = 300
   readonly size = 6
   readonly color = '#7d5e2a'
 

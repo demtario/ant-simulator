@@ -29,6 +29,6 @@ export class FoodSource implements Entity {
   }
 
   get size() {
-    return this.foodLeft / 30
+    return this.foodLeft / 50
   }
 }
