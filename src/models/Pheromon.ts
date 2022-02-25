@@ -6,6 +6,9 @@ export enum PheromonType {
   Home,
 }
 
+const FOOD_COLOR = '#5588a3'
+const HOME_COLOR = '#d56073'
+
 export class Pheromon implements Entity {
   public x: number
   public y: number
@@ -17,14 +20,12 @@ export class Pheromon implements Entity {
   public static maxLifeTime = 10 * 1000
 
   readonly size = 2
-  readonly foodColor = '#d56073'
-  readonly homeColor = '#5588a3'
 
   constructor(x: number, y: number, type: PheromonType) {
     this.x = x
     this.y = y
     this.type = type
-    this.color = this.type === PheromonType.Food ? this.foodColor : this.homeColor
+    this.color = this.type === PheromonType.Food ? FOOD_COLOR : HOME_COLOR
   }
 
   update(_ctx: GameContext, deltaTime: number) {

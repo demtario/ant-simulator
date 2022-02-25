@@ -117,7 +117,7 @@ export class Ant implements Entity {
     ctx.fillStyle = this.color
     ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size)
     if (this.state === AntState.ReturningToColony) {
-      const dropletSize = this.size * 0.7
+      const dropletSize = this.size * 0.5
       ctx.fillStyle = '#52de97'
       ctx.fillRect(this.x - dropletSize / 2, this.y - dropletSize / 2, dropletSize, dropletSize)
     }
