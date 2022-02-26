@@ -12,7 +12,7 @@ export class FoodSource implements Entity {
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
-    this.foodLeft = Math.random() * 400 + 600
+    this.foodLeft = Math.round(Math.random() * 400 + 600)
   }
 
   update(_ctx: GameContext, _deltaTime: number) {}
@@ -22,6 +22,9 @@ export class FoodSource implements Entity {
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
     ctx.fill()
+
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(`${this.foodLeft}`, this.x - 10, this.y)
   }
 
   removeFood() {
@@ -29,6 +32,6 @@ export class FoodSource implements Entity {
   }
 
   get size() {
-    return this.foodLeft / 50
+    return this.foodLeft / 20
   }
 }

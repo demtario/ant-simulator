@@ -22,6 +22,8 @@ export class AntColony implements Entity {
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
     ctx.fill()
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(`${this.score}`, this.x, this.y)
   }
 
   increaseScore(value = 1) {

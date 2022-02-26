@@ -1,12 +1,20 @@
 import { GAME_HEIGHT, GAME_WIDTH } from '../consts'
 import { GameContext } from '../types/GameContext'
+import { calcDistance } from '../utils'
 import { Entity } from './Entity'
 import { FoodSource } from './FoodSource'
 import { Pheromon, PheromonType } from './Pheromon'
+import { Sensor } from './Sensor'
 
 enum AntState {
   SearchingFood,
   ReturningToColony,
+}
+
+enum AntDirection {
+  Left,
+  Forward,
+  Right,
 }
 
 export class Ant implements Entity {
@@ -17,11 +25,18 @@ export class Ant implements Entity {
 
   public state = AntState.SearchingFood
 
+  // Movement
+  public desiredDirection = AntDirection.Forward
+  private leftSensor: Sensor
+  private forwardSensor: Sensor
+  private rightSensor: Sensor
+
   public timeFromLastPheromon: number = 0
 
-  readonly maxSpeed = 12
-  readonly wardeningStrength = 8
-  readonly pheromonTimeDelay = 300
+  readonly maxSpeed = 8
+  readonly sensorDistance = 16
+  readonly wardeningStrength = 40
+  readonly pheromonTimeDelay = 100
   readonly size = 6
   readonly color = '#7d5e2a'
 
@@ -29,11 +44,15 @@ export class Ant implements Entity {
     this.x = x
     this.y = y
     this.angle = Math.random() * Math.PI * 2
+
+    this.leftSensor = new Sensor(this.x, this.y)
+    this.forwardSensor = new Sensor(this.x, this.y)
+    this.rightSensor = new Sensor(this.x, this.y)
   }
 
   update(ctx: GameContext, deltaTime: number) {
-    // Random rotations
-    this.angle += (Math.random() - 0.5) * Math.PI * (1 / this.wardeningStrength)
+    this.updateSensorPositions()
+    this.handleRotate(ctx)
 
     // Handle move
     this.x += Math.cos(this.angle) * deltaTime * (this.maxSpeed / 100)
@@ -50,10 +69,53 @@ export class Ant implements Entity {
     this.createPheromon(ctx, deltaTime)
   }
 
+  updateSensorPositions() {
+    const leftSensorAngle = this.angle - Math.PI / 5
+    const rightSensorAngle = this.angle + Math.PI / 5
+
+    // Set sensor position relative to the ant
+    this.leftSensor.setPosition(
+      this.x + Math.cos(leftSensorAngle) * this.sensorDistance,
+      this.y + Math.sin(leftSensorAngle) * this.sensorDistance
+    )
+    this.rightSensor.setPosition(
+      this.x + Math.cos(rightSensorAngle) * this.sensorDistance,
+      this.y + Math.sin(rightSensorAngle) * this.sensorDistance
+    )
+    this.forwardSensor.setPosition(
+      this.x + Math.cos(this.angle) * this.sensorDistance,
+      this.y + Math.sin(this.angle) * this.sensorDistance
+    )
+  }
+
+  handleRotate(ctx: GameContext) {
+    const pheromons = this.state === AntState.SearchingFood ? ctx.homePheromons : ctx.foodPheromons
+
+    const leftPheromonsStrength = this.leftSensor.getPheromonStrength(pheromons)
+    const forwardPheromonsStrength = this.forwardSensor.getPheromonStrength(pheromons)
+    const rightPheromonsStrength = this.rightSensor.getPheromonStrength(pheromons)
+
+    if (forwardPheromonsStrength > Math.max(leftPheromonsStrength, rightPheromonsStrength))
+      this.desiredDirection = AntDirection.Forward
+    else if (leftPheromonsStrength > rightPheromonsStrength)
+      this.desiredDirection = AntDirection.Left
+    else if (rightPheromonsStrength > leftPheromonsStrength)
+      this.desiredDirection = AntDirection.Right
+
+    // Random rotations
+    this.angle = this.desiredAngle + (Math.random() - 0.5) * Math.PI * (1 / this.wardeningStrength)
+  }
+
+  get desiredAngle() {
+    if (this.desiredDirection === AntDirection.Left) return this.angle - Math.PI / 6
+    else if (this.desiredDirection === AntDirection.Right) return this.angle + Math.PI / 6
+    return this.angle
+  }
+
   handleGatherFood({ foodSources }: GameContext) {
     type ClosestFoodSource = { distance: number; foodSource: FoodSource }
     const closestFoodSource = foodSources.reduce<ClosestFoodSource>((closest, foodSource) => {
-      const distance = Math.hypot(foodSource.x - this.x, foodSource.y - this.y)
+      const distance = calcDistance(this, foodSource)
       if (!closest || distance < closest.distance) {
         return { distance, foodSource }
       }
@@ -121,5 +183,9 @@ export class Ant implements Entity {
       ctx.fillStyle = '#52de97'
       ctx.fillRect(this.x - dropletSize / 2, this.y - dropletSize / 2, dropletSize, dropletSize)
     }
+
+    this.leftSensor.draw(ctx)
+    this.forwardSensor.draw(ctx)
+    this.rightSensor.draw(ctx)
   }
 }

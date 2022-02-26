@@ -15,4 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // @ts-ignore
   window.game = game
+  // @ts-ignore
+  window.canvas = canvas
 })

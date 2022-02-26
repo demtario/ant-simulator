@@ -1,3 +1,4 @@
+import { GAME_SHOW_PHEROMONS } from '../consts'
 import { GameContext } from '../types/GameContext'
 import { Entity } from './Entity'
 
@@ -17,7 +18,7 @@ export class Pheromon implements Entity {
   public color: string
   public type: PheromonType
 
-  public static maxLifeTime = 10 * 1000
+  public static maxLifeTime = 20 * 1000
 
   readonly size = 2
 
@@ -32,7 +33,13 @@ export class Pheromon implements Entity {
     this.lifeTime += deltaTime
   }
 
+  get strength() {
+    return Math.floor((this.lifeTime / Pheromon.maxLifeTime) * 100)
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
+    if (!GAME_SHOW_PHEROMONS) return
+
     const opacity = Math.floor(
       (Math.max(Pheromon.maxLifeTime - this.lifeTime, 0) / Pheromon.maxLifeTime) * 256
     )
