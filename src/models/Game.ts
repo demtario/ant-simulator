@@ -11,6 +11,7 @@ import { Ant } from './Ant'
 import { AntColony } from './AntColony'
 import { FoodSource } from './FoodSource'
 import { Pheromon } from './Pheromon'
+import { PheromonMap } from './PheromonMap'
 
 const primarySceneCanvas = document.querySelector<HTMLCanvasElement>('#primaryScene')!
 const pheromonsSceneCanvas = document.querySelector<HTMLCanvasElement>('#pheromonsScene')!
@@ -24,8 +25,8 @@ export class Game {
 
   public colony: AntColony
   public ants: Ant[]
-  public foodPheromons: Pheromon[] = []
-  public homePheromons: Pheromon[] = []
+  public foodPheromons = new PheromonMap()
+  public homePheromons = new PheromonMap()
   public foodSources: FoodSource[] = []
 
   public times: number[] = []
@@ -50,8 +51,8 @@ export class Game {
     ctx.fillRect(0, 0, primarySceneCanvas.width, primarySceneCanvas.height)
 
     if (GAME_SHOW_PHEROMONS) {
-      this.foodPheromons.map((e) => e.draw(pheromonsCtx))
-      this.homePheromons.map((e) => e.draw(pheromonsCtx))
+      this.foodPheromons.forEach((e) => e.draw(pheromonsCtx))
+      this.homePheromons.forEach((e) => e.draw(pheromonsCtx))
 
       ctx.drawImage(pheromonsSceneCanvas, 0, 0)
     }
@@ -76,8 +77,8 @@ export class Game {
   }
 
   update(deltaTime: number) {
-    this.foodPheromons.map((e) => e.update(this, deltaTime))
-    this.homePheromons.map((e) => e.update(this, deltaTime))
+    this.foodPheromons.forEach((e) => e.update(this, deltaTime))
+    this.homePheromons.forEach((e) => e.update(this, deltaTime))
     this.foodPheromons = this.foodPheromons.filter((e) => e.lifeTime < Pheromon.maxLifeTime)
     this.homePheromons = this.homePheromons.filter((e) => e.lifeTime < Pheromon.maxLifeTime)
 

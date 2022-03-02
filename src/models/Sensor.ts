@@ -1,12 +1,12 @@
 import { GAME_SHOW_SENSORS } from '../consts'
 import { round } from '../utils'
-import { Pheromon } from './Pheromon'
+import { PheromonMap } from './PheromonMap'
 
 export class Sensor {
   public x: number
   public y: number
 
-  public sensationRadius = 2
+  public sensationRadius = 4
 
   constructor(x: number, y: number) {
     this.x = x
@@ -18,15 +18,13 @@ export class Sensor {
     this.y = y
   }
 
-  getPheromonStrength(pheromons: Pheromon[]): number {
-    const pheromonStrengths = pheromons.map((pheromon) => {
-      const distance = Math.sqrt(
-        Math.pow(this.x - pheromon.x, 2) + Math.pow(this.y - pheromon.y, 2)
-      )
-      return distance > this.sensationRadius ? 0 : pheromon.strength
-    })
+  updatePosition(x: number, y: number, angle: number, distance: number) {
+    this.setPosition(x + Math.cos(angle) * distance, y + Math.sin(angle) * distance)
+  }
 
-    return pheromonStrengths.reduce<number>((a, b) => a + b, 0)
+  getPheromonStrength(pheromons: PheromonMap): number {
+    const nearbyPheromons = pheromons.getAllInCircle(this.x, this.y, this.sensationRadius)
+    return nearbyPheromons.reduce<number>((sum, pheromon) => sum + pheromon.strength, 0)
   }
 
   draw(ctx: CanvasRenderingContext2D) {

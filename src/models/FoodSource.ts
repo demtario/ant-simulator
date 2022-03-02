@@ -13,7 +13,7 @@ export class FoodSource implements Entity {
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
-    this.foodLeft = round(Math.random() * 400 + 600, 0)
+    this.foodLeft = round(Math.random() * 400 + 200, 0)
   }
 
   update(_ctx: GameContext, _deltaTime: number) {}

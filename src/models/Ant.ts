@@ -41,10 +41,10 @@ export class Ant implements Entity {
   public timeFromLastPheromon: number = 0
 
   readonly maxSpeed = 8
-  readonly sensorDistance = 8
-  readonly wardeningStrength = 20
+  readonly sensorDistance = 14
+  readonly wardeningStrength = 10
   readonly pheromonTimeDelay = GAME_PHEROMONS_TIME_DELAY
-  readonly size = 6
+  readonly size = 8
   readonly color = '#7d5e2a'
 
   constructor(x = Math.random() * GAME_WIDTH, y = Math.random() * GAME_HEIGHT) {
@@ -77,22 +77,12 @@ export class Ant implements Entity {
   }
 
   updateSensorPositions() {
-    const leftSensorAngle = this.angle - Math.PI / 5
-    const rightSensorAngle = this.angle + Math.PI / 5
-
     // Set sensor position relative to the ant
-    this.leftSensor.setPosition(
-      this.x + Math.cos(leftSensorAngle) * this.sensorDistance,
-      this.y + Math.sin(leftSensorAngle) * this.sensorDistance
-    )
-    this.rightSensor.setPosition(
-      this.x + Math.cos(rightSensorAngle) * this.sensorDistance,
-      this.y + Math.sin(rightSensorAngle) * this.sensorDistance
-    )
-    this.forwardSensor.setPosition(
-      this.x + Math.cos(this.angle) * this.sensorDistance,
-      this.y + Math.sin(this.angle) * this.sensorDistance
-    )
+    const leftSensorAngle = this.angle - Math.PI / 6
+    const rightSensorAngle = this.angle + Math.PI / 6
+    this.leftSensor.updatePosition(this.x, this.y, leftSensorAngle, this.sensorDistance)
+    this.rightSensor.updatePosition(this.x, this.y, rightSensorAngle, this.sensorDistance)
+    this.forwardSensor.updatePosition(this.x, this.y, this.angle, this.sensorDistance)
   }
 
   handleRotate(ctx: GameContext) {
@@ -139,8 +129,8 @@ export class Ant implements Entity {
   }
 
   get desiredAngle() {
-    if (this.desiredDirection === AntDirection.Left) return this.angle - Math.PI / 5
-    else if (this.desiredDirection === AntDirection.Right) return this.angle + Math.PI / 5
+    if (this.desiredDirection === AntDirection.Left) return this.angle - Math.PI / 6
+    else if (this.desiredDirection === AntDirection.Right) return this.angle + Math.PI / 6
     return this.angle
   }
 

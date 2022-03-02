@@ -1,7 +1,7 @@
 import { Ant } from '../models/Ant'
 import { AntColony } from '../models/AntColony'
 import { FoodSource } from '../models/FoodSource'
-import { Pheromon } from '../models/Pheromon'
+import { PheromonMap } from '../models/PheromonMap'
 
 export interface GameContext {
   colony: AntColony
@@ -9,6 +9,6 @@ export interface GameContext {
 
   foodSources: FoodSource[]
 
-  foodPheromons: Pheromon[]
-  homePheromons: Pheromon[]
+  foodPheromons: PheromonMap
+  homePheromons: PheromonMap
 }

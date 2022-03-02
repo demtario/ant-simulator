@@ -22,11 +22,11 @@ export class Pheromon implements Entity {
 
   public static maxLifeTime = GAME_PHEROMONS_LIFESPAN * 1000
 
-  readonly size = 4
+  readonly size = 3
 
   constructor(x: number, y: number, type: PheromonType) {
-    this.x = x
-    this.y = y
+    this.x = round(x)
+    this.y = round(y)
     this.type = type
     this.color = this.type === PheromonType.Food ? FOOD_COLOR : HOME_COLOR
   }
