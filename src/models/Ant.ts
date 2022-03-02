@@ -1,6 +1,11 @@
-import { GAME_HEIGHT, GAME_WIDTH } from '../consts'
+import {
+  GAME_HEIGHT,
+  GAME_PHEROMONS_TIME_DELAY,
+  GAME_SENSORS_DISABLED,
+  GAME_WIDTH,
+} from '../consts'
 import { GameContext } from '../types/GameContext'
-import { calcDistance } from '../utils'
+import { calcDistance, round } from '../utils'
 import { Entity } from './Entity'
 import { FoodSource } from './FoodSource'
 import { Pheromon, PheromonType } from './Pheromon'
@@ -36,7 +41,7 @@ export class Ant implements Entity {
   readonly maxSpeed = 8
   readonly sensorDistance = 16
   readonly wardeningStrength = 40
-  readonly pheromonTimeDelay = 100
+  readonly pheromonTimeDelay = GAME_PHEROMONS_TIME_DELAY
   readonly size = 6
   readonly color = '#7d5e2a'
 
@@ -50,7 +55,7 @@ export class Ant implements Entity {
     this.rightSensor = new Sensor(this.x, this.y)
   }
 
-  update(ctx: GameContext, deltaTime: number) {
+  async update(ctx: GameContext, deltaTime: number) {
     this.updateSensorPositions()
     this.handleRotate(ctx)
 
@@ -91,16 +96,18 @@ export class Ant implements Entity {
   handleRotate(ctx: GameContext) {
     const pheromons = this.state === AntState.SearchingFood ? ctx.homePheromons : ctx.foodPheromons
 
-    const leftPheromonsStrength = this.leftSensor.getPheromonStrength(pheromons)
-    const forwardPheromonsStrength = this.forwardSensor.getPheromonStrength(pheromons)
-    const rightPheromonsStrength = this.rightSensor.getPheromonStrength(pheromons)
+    if (!GAME_SENSORS_DISABLED) {
+      const leftPheromonsStrength = this.leftSensor.getPheromonStrength(pheromons)
+      const forwardPheromonsStrength = this.forwardSensor.getPheromonStrength(pheromons)
+      const rightPheromonsStrength = this.rightSensor.getPheromonStrength(pheromons)
 
-    if (forwardPheromonsStrength > Math.max(leftPheromonsStrength, rightPheromonsStrength))
-      this.desiredDirection = AntDirection.Forward
-    else if (leftPheromonsStrength > rightPheromonsStrength)
-      this.desiredDirection = AntDirection.Left
-    else if (rightPheromonsStrength > leftPheromonsStrength)
-      this.desiredDirection = AntDirection.Right
+      if (forwardPheromonsStrength > Math.max(leftPheromonsStrength, rightPheromonsStrength))
+        this.desiredDirection = AntDirection.Forward
+      else if (leftPheromonsStrength > rightPheromonsStrength)
+        this.desiredDirection = AntDirection.Left
+      else if (rightPheromonsStrength > leftPheromonsStrength)
+        this.desiredDirection = AntDirection.Right
+    }
 
     // Random rotations
     this.angle = this.desiredAngle + (Math.random() - 0.5) * Math.PI * (1 / this.wardeningStrength)
@@ -177,7 +184,8 @@ export class Ant implements Entity {
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color
-    ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size)
+
+    ctx.fillRect(round(this.x - this.size / 2), round(this.y - this.size / 2), this.size, this.size)
     if (this.state === AntState.ReturningToColony) {
       const dropletSize = this.size * 0.5
       ctx.fillStyle = '#52de97'

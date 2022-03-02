@@ -1,4 +1,5 @@
-import { GAME_HEIGHT, GAME_SHOW_SENSORS, GAME_WIDTH } from '../consts'
+import { GAME_SHOW_SENSORS } from '../consts'
+import { round } from '../utils'
 import { Pheromon } from './Pheromon'
 
 export class Sensor {
@@ -13,10 +14,6 @@ export class Sensor {
   }
 
   setPosition(x: number, y: number) {
-    if (x < 0 || y < 0 || x > GAME_WIDTH || y > GAME_HEIGHT) {
-      console.log({ x, y })
-    }
-
     this.x = x
     this.y = y
   }
@@ -38,7 +35,7 @@ export class Sensor {
     const size = this.sensationRadius
     ctx.strokeStyle = '#ffffff'
     ctx.beginPath()
-    ctx.arc(this.x, this.y, size, 0, Math.PI * 2)
+    ctx.arc(round(this.x), round(this.y), size, 0, Math.PI * 2)
     ctx.stroke()
   }
 }

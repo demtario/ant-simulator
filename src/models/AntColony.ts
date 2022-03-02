@@ -1,4 +1,5 @@
 import { GameContext } from '../types/GameContext'
+import { round } from '../utils'
 import { Entity } from './Entity'
 
 export class AntColony implements Entity {
@@ -20,7 +21,7 @@ export class AntColony implements Entity {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color
     ctx.beginPath()
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+    ctx.arc(round(this.x), round(this.y), this.size, 0, Math.PI * 2)
     ctx.fill()
     ctx.fillStyle = '#ffffff'
     ctx.fillText(`${this.score}`, this.x, this.y)

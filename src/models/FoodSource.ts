@@ -1,4 +1,5 @@
 import { GameContext } from '../types/GameContext'
+import { round } from '../utils'
 import { Entity } from './Entity'
 
 export class FoodSource implements Entity {
@@ -12,7 +13,7 @@ export class FoodSource implements Entity {
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
-    this.foodLeft = Math.round(Math.random() * 400 + 600)
+    this.foodLeft = round(Math.random() * 400 + 600, 0)
   }
 
   update(_ctx: GameContext, _deltaTime: number) {}
@@ -20,11 +21,11 @@ export class FoodSource implements Entity {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color
     ctx.beginPath()
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+    ctx.arc(round(this.x), round(this.y), this.size, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.fillStyle = '#ffffff'
-    ctx.fillText(`${this.foodLeft}`, this.x - 10, this.y)
+    ctx.fillText(`${this.foodLeft}`, round(this.x - 10), round(this.y))
   }
 
   removeFood() {
@@ -32,6 +33,6 @@ export class FoodSource implements Entity {
   }
 
   get size() {
-    return this.foodLeft / 20
+    return Math.max(20, round(this.foodLeft / 20))
   }
 }
