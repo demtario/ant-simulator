@@ -6,7 +6,7 @@ export class Sensor {
   public x: number
   public y: number
 
-  public sensationRadius = 4
+  public sensationRadius = 2
 
   constructor(x: number, y: number) {
     this.x = x

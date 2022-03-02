@@ -22,6 +22,8 @@ enum AntDirection {
   Right,
 }
 
+type ClosestFoodSource = { distance: number; foodSource: FoodSource }
+
 export class Ant implements Entity {
   public x: number
   public y: number
@@ -39,8 +41,8 @@ export class Ant implements Entity {
   public timeFromLastPheromon: number = 0
 
   readonly maxSpeed = 8
-  readonly sensorDistance = 16
-  readonly wardeningStrength = 40
+  readonly sensorDistance = 8
+  readonly wardeningStrength = 20
   readonly pheromonTimeDelay = GAME_PHEROMONS_TIME_DELAY
   readonly size = 6
   readonly color = '#7d5e2a'
@@ -111,23 +113,49 @@ export class Ant implements Entity {
 
     // Random rotations
     this.angle = this.desiredAngle + (Math.random() - 0.5) * Math.PI * (1 / this.wardeningStrength)
+
+    // Detect if near food source
+    if (this.state === AntState.SearchingFood) {
+      const closestFoodSource = this.getClosesFoodSource(ctx.foodSources)
+      if (
+        closestFoodSource &&
+        closestFoodSource.distance <
+          this.size + closestFoodSource.foodSource.size + this.sensorDistance
+      )
+        this.angle = Math.atan2(
+          closestFoodSource.foodSource.y - this.y,
+          closestFoodSource.foodSource.x - this.x
+        )
+    }
+
+    // Detect if near home
+    if (this.state === AntState.ReturningToColony) {
+      const { colony } = ctx
+      const distanceToColony = calcDistance(this, colony)
+      if (distanceToColony < this.size + colony.size + this.sensorDistance) {
+        this.angle = Math.atan2(colony.y - this.y, colony.x - this.x)
+      }
+    }
   }
 
   get desiredAngle() {
-    if (this.desiredDirection === AntDirection.Left) return this.angle - Math.PI / 6
-    else if (this.desiredDirection === AntDirection.Right) return this.angle + Math.PI / 6
+    if (this.desiredDirection === AntDirection.Left) return this.angle - Math.PI / 5
+    else if (this.desiredDirection === AntDirection.Right) return this.angle + Math.PI / 5
     return this.angle
   }
 
-  handleGatherFood({ foodSources }: GameContext) {
-    type ClosestFoodSource = { distance: number; foodSource: FoodSource }
-    const closestFoodSource = foodSources.reduce<ClosestFoodSource>((closest, foodSource) => {
+  getClosesFoodSource(foodSources: FoodSource[]): ClosestFoodSource | null {
+    return foodSources.reduce<ClosestFoodSource>((closest, foodSource) => {
       const distance = calcDistance(this, foodSource)
       if (!closest || distance < closest.distance) {
         return { distance, foodSource }
       }
       return closest
     }, null as any)
+  }
+
+  handleGatherFood({ foodSources }: GameContext) {
+    const closestFoodSource = this.getClosesFoodSource(foodSources)
 
     if (!closestFoodSource) return
 
