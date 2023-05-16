@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Generate typedoc
+      - name: Generate site
         run: pnpm run build
 
       - name: Deploy to GitHub Pages
