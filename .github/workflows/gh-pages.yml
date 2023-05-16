@@ -3,10 +3,14 @@ name: Build GitHub Page
 on: push
 
 jobs:
-  swagger-gh-pages:
+  ants-gh-pages:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 6.0.2
+
       - name: Instantiate package
         uses: actions/checkout@v2
 
