@@ -1,0 +1,23 @@
+name: Build GitHub Page
+
+on: push
+
+jobs:
+  swagger-gh-pages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Instantiate package
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate typedoc
+        run: pnpm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.github_token }}
+          publish_dir: dist
