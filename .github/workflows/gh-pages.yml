@@ -18,7 +18,7 @@ jobs:
         run: pnpm install
 
       - name: Generate site
-        run: pnpm run build --base=/ant-simulator/
+        run: pnpm run build:pages
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
