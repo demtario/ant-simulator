@@ -1,4 +1,5 @@
 import {
+  GAME_ANTS_WANDERING_STRENGTH,
   GAME_HEIGHT,
   GAME_PHEROMONS_TIME_DELAY,
   GAME_SENSORS_DISABLED,
@@ -42,7 +43,7 @@ export class Ant implements Entity {
 
   readonly maxSpeed = 8
   readonly sensorDistance = 14
-  readonly wardeningStrength = 10
+  readonly wardeningStrength = GAME_ANTS_WANDERING_STRENGTH
   readonly pheromonTimeDelay = GAME_PHEROMONS_TIME_DELAY
   readonly size = 8
   readonly color = '#7d5e2a'

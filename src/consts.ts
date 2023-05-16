@@ -2,6 +2,7 @@ export const GAME_WIDTH = 1200
 export const GAME_HEIGHT = 800
 
 export const GAME_ANTS = 180
+export const GAME_ANTS_WANDERING_STRENGTH = 8 // less - more wandering
 export const GAME_PHEROMONS_TIME_DELAY = 60 // miliseconds
 export const GAME_PHEROMONS_LIFESPAN = 20 // seconds
 

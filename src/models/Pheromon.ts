@@ -11,28 +11,38 @@ export enum PheromonType {
 const FOOD_COLOR = '#5588a3'
 const HOME_COLOR = '#d56073'
 
+let lastId = 0
+
 export class Pheromon implements Entity {
+  public id: number
   public x: number
   public y: number
 
   public lifeTime = 0
-  public color: string
   public type: PheromonType
   public lastRenderedStep = 0
 
   public static maxLifeTime = GAME_PHEROMONS_LIFESPAN * 1000
 
-  readonly size = 3
+  readonly size = 2
 
   constructor(x: number, y: number, type: PheromonType) {
+    this.id = ++lastId
     this.x = round(x)
     this.y = round(y)
     this.type = type
-    this.color = this.type === PheromonType.Food ? FOOD_COLOR : HOME_COLOR
   }
 
   update(_ctx: GameContext, deltaTime: number) {
     this.lifeTime += deltaTime
+  }
+
+  get isDead() {
+    return this.lifeTime >= Pheromon.maxLifeTime
+  }
+
+  get color() {
+    return this.type === PheromonType.Food ? FOOD_COLOR : HOME_COLOR
   }
 
   /**

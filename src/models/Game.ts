@@ -10,7 +10,6 @@ import { round } from '../utils'
 import { Ant } from './Ant'
 import { AntColony } from './AntColony'
 import { FoodSource } from './FoodSource'
-import { Pheromon } from './Pheromon'
 import { PheromonMap } from './PheromonMap'
 
 const primarySceneCanvas = document.querySelector<HTMLCanvasElement>('#primaryScene')!
@@ -35,7 +34,7 @@ export class Game {
   public drawTime = 0
 
   constructor() {
-    this.colony = new AntColony(GAME_WIDTH / 2, GAME_HEIGHT / 2)
+    this.colony = new AntColony(Math.random() * (GAME_WIDTH / 2), Math.random() * (GAME_HEIGHT / 2))
     this.ants = Array.from({ length: GAME_ANTS }, () => new Ant(this.colony.x, this.colony.y))
 
     this.foodSources = Array.from(
@@ -74,13 +73,14 @@ export class Game {
     ctx.fillText(`Memory: ${round(usedMemeory / 1024 / 1024)} MB`, 10, 30)
     ctx.fillText(`Update time: ${round(this.updateTime, 2)}ms`, 10, 40)
     ctx.fillText(`Render time: ${round(this.drawTime, 2)}ms`, 10, 50)
+    ctx.fillText(`Elements count: ${this.foodPheromons.length + this.homePheromons.length}`, 10, 60)
   }
 
   update(deltaTime: number) {
-    this.foodPheromons.forEach((e) => e.update(this, deltaTime))
-    this.homePheromons.forEach((e) => e.update(this, deltaTime))
-    this.foodPheromons = this.foodPheromons.filter((e) => e.lifeTime < Pheromon.maxLifeTime)
-    this.homePheromons = this.homePheromons.filter((e) => e.lifeTime < Pheromon.maxLifeTime)
+    this.foodPheromons.forEach((p) => p.update(this, deltaTime))
+    this.homePheromons.forEach((p) => p.update(this, deltaTime))
+    this.foodPheromons = this.foodPheromons.filter((p) => !p.isDead)
+    this.homePheromons = this.homePheromons.filter((p) => !p.isDead)
 
     this.ants.map((e) => e.update(this, deltaTime))
 
