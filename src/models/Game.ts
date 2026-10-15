@@ -11,6 +11,7 @@ import { round } from '../utils'
 import { Ant } from './Ant'
 import { AntColony } from './AntColony'
 import { FoodSource } from './FoodSource'
+import { Pheromon } from './Pheromon'
 import { PheromonMap } from './PheromonMap'
 
 const primarySceneCanvas = document.querySelector<HTMLCanvasElement>('#primaryScene')!
@@ -29,6 +30,9 @@ export class Game {
   public foodPheromons = new PheromonMap()
   public homePheromons = new PheromonMap()
   public foodSources: FoodSource[] = []
+
+  /** Pheromons removed since the last draw, still to be erased from the pheromons canvas */
+  private deadPheromons: Pheromon[] = []
 
   public times: number[] = []
   public fps = 0
@@ -52,6 +56,8 @@ export class Game {
     ctx.fillRect(0, 0, primarySceneCanvas.width, primarySceneCanvas.height)
 
     if (GAME_SHOW_PHEROMONS) {
+      this.erasePheromons()
+
       this.foodPheromons.forEach((e) => e.draw(pheromonsCtx))
       this.homePheromons.forEach((e) => e.draw(pheromonsCtx))
 
@@ -65,6 +71,21 @@ export class Game {
     this.colony.draw(ctx)
 
     if (GAME_SHOW_PERFORMANCE) this.drawPerfomance()
+  }
+
+  erasePheromons() {
+    this.deadPheromons.forEach((dead) => {
+      dead.erase(pheromonsCtx)
+
+      // Clearing may have cut into overlapping neighbours, force them to be redrawn
+      for (let x = dead.x - 1; x <= dead.x + 1; x++) {
+        for (let y = dead.y - 1; y <= dead.y + 1; y++) {
+          this.foodPheromons.get(x, y).forEach((p) => (p.lastRenderedStep = 0))
+          this.homePheromons.get(x, y).forEach((p) => (p.lastRenderedStep = 0))
+        }
+      }
+    })
+    this.deadPheromons = []
   }
 
   drawPerfomance() {
@@ -81,8 +102,11 @@ export class Game {
   update(deltaTime: number) {
     this.foodPheromons.forEach((p) => p.update(this, deltaTime))
     this.homePheromons.forEach((p) => p.update(this, deltaTime))
-    this.foodPheromons.removeWhere((p) => p.isDead)
-    this.homePheromons.removeWhere((p) => p.isDead)
+    const dead = [
+      ...this.foodPheromons.removeWhere((p) => p.isDead),
+      ...this.homePheromons.removeWhere((p) => p.isDead),
+    ]
+    if (GAME_SHOW_PHEROMONS) this.deadPheromons.push(...dead)
 
     this.ants.map((e) => e.update(this, deltaTime))
 

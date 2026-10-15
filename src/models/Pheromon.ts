@@ -62,6 +62,14 @@ export class Pheromon implements Entity {
     return 10 - round(this.strength / 10) + 1
   }
 
+  /**
+   * Clears pixels left by this pheromon. Pheromons are drawn incrementally on a persistent canvas,
+   * so a removed one would otherwise stay visible forever.
+   */
+  erase(ctx: CanvasRenderingContext2D) {
+    ctx.clearRect(round(this.x - this.size / 2), round(this.y - this.size / 2), this.size, this.size)
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
     if (this.lastRenderedStep === this.renderStep) return
 
