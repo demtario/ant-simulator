@@ -58,7 +58,7 @@ export class Ant implements Entity {
     this.rightSensor = new Sensor(this.x, this.y)
   }
 
-  async update(ctx: GameContext, deltaTime: number) {
+  update(ctx: GameContext, deltaTime: number) {
     this.updateSensorPositions()
     this.handleRotate(ctx)
 

@@ -79,8 +79,8 @@ export class Game {
   update(deltaTime: number) {
     this.foodPheromons.forEach((p) => p.update(this, deltaTime))
     this.homePheromons.forEach((p) => p.update(this, deltaTime))
-    this.foodPheromons = this.foodPheromons.filter((p) => !p.isDead)
-    this.homePheromons = this.homePheromons.filter((p) => !p.isDead)
+    this.foodPheromons.removeWhere((p) => p.isDead)
+    this.homePheromons.removeWhere((p) => p.isDead)
 
     this.ants.map((e) => e.update(this, deltaTime))
 

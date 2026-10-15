@@ -23,8 +23,7 @@ export class Sensor {
   }
 
   getPheromonStrength(pheromons: PheromonMap): number {
-    const nearbyPheromons = pheromons.getAllInCircle(this.x, this.y, this.sensationRadius)
-    return nearbyPheromons.reduce<number>((sum, pheromon) => sum + pheromon.strength, 0)
+    return pheromons.getStrengthInCircle(this.x, this.y, this.sensationRadius)
   }
 
   draw(ctx: CanvasRenderingContext2D) {
