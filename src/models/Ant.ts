@@ -100,6 +100,7 @@ export class Ant implements Entity {
         this.desiredDirection = AntDirection.Left
       else if (rightPheromonsStrength > leftPheromonsStrength)
         this.desiredDirection = AntDirection.Right
+      else if ((globalThis as any).CFG?.resetDir) this.desiredDirection = AntDirection.Forward
     }
 
     // Random rotations
@@ -154,6 +155,7 @@ export class Ant implements Entity {
       closestFoodSource.foodSource.removeFood()
 
       this.state = AntState.ReturningToColony
+      this.timeInState = 0
       this.angle += Math.PI
     }
   }
@@ -162,6 +164,7 @@ export class Ant implements Entity {
     const distanceToColony = Math.hypot(this.x - colony.x, this.y - colony.y)
     if (distanceToColony < this.size + colony.size) {
       this.state = AntState.SearchingFood
+      this.timeInState = 0
       this.angle += Math.PI
 
       colony.increaseScore()
@@ -187,15 +190,21 @@ export class Ant implements Entity {
     }
   }
 
+  public timeInState = 0
+
   createPheromon(ctx: GameContext, deltaTime: number) {
     this.timeFromLastPheromon += deltaTime
+    this.timeInState += deltaTime
 
     if (this.timeFromLastPheromon > this.pheromonTimeDelay) {
       this.timeFromLastPheromon = 0
 
       const pheromonType =
         this.state === AntState.SearchingFood ? PheromonType.Food : PheromonType.Home
-      const pheromon = new Pheromon(this.x, this.y, pheromonType)
+      const T = ((globalThis as any).CFG?.budget ?? 0) * 1000
+      const intensity = T ? Math.max(0, 1 - this.timeInState / T) : 1
+      if (intensity <= 0) return
+      const pheromon = new Pheromon(this.x, this.y, pheromonType, intensity)
       if (pheromonType === PheromonType.Food) ctx.foodPheromons.push(pheromon)
       else ctx.homePheromons.push(pheromon)
     }
