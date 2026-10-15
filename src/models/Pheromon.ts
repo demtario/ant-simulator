@@ -26,7 +26,10 @@ export class Pheromon implements Entity {
 
   readonly size = 2
 
-  constructor(x: number, y: number, type: PheromonType) {
+  public intensity: number
+
+  constructor(x: number, y: number, type: PheromonType, intensity = 1) {
+    this.intensity = intensity
     this.id = ++lastId
     this.x = round(x)
     this.y = round(y)
@@ -49,7 +52,7 @@ export class Pheromon implements Entity {
    * From 100 to 1
    */
   get strength() {
-    return 100 - Math.floor((this.lifeTime / Pheromon.maxLifeTime) * 100)
+    return (100 - Math.floor((this.lifeTime / Pheromon.maxLifeTime) * 100)) * this.intensity
   }
 
   /**

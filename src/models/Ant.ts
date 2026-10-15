@@ -1,6 +1,7 @@
 import {
   GAME_ANTS_WANDERING_STRENGTH,
   GAME_HEIGHT,
+  GAME_PHEROMONS_LAYING_TIME,
   GAME_PHEROMONS_TIME_DELAY,
   GAME_SENSORS_DISABLED,
   GAME_WIDTH,
@@ -40,6 +41,8 @@ export class Ant implements Entity {
   private rightSensor: Sensor
 
   public timeFromLastPheromon: number = 0
+  /** Time since last food pickup / drop, used to fade laid pheromons */
+  public timeInState = 0
 
   readonly maxSpeed = 8
   readonly sensorDistance = 14
@@ -100,6 +103,7 @@ export class Ant implements Entity {
         this.desiredDirection = AntDirection.Left
       else if (rightPheromonsStrength > leftPheromonsStrength)
         this.desiredDirection = AntDirection.Right
+      else this.desiredDirection = AntDirection.Forward
     }
 
     // Random rotations
@@ -154,6 +158,7 @@ export class Ant implements Entity {
       closestFoodSource.foodSource.removeFood()
 
       this.state = AntState.ReturningToColony
+      this.timeInState = 0
       this.angle += Math.PI
     }
   }
@@ -162,6 +167,7 @@ export class Ant implements Entity {
     const distanceToColony = Math.hypot(this.x - colony.x, this.y - colony.y)
     if (distanceToColony < this.size + colony.size) {
       this.state = AntState.SearchingFood
+      this.timeInState = 0
       this.angle += Math.PI
 
       colony.increaseScore()
@@ -189,13 +195,16 @@ export class Ant implements Entity {
 
   createPheromon(ctx: GameContext, deltaTime: number) {
     this.timeFromLastPheromon += deltaTime
+    this.timeInState += deltaTime
 
     if (this.timeFromLastPheromon > this.pheromonTimeDelay) {
       this.timeFromLastPheromon = 0
 
       const pheromonType =
         this.state === AntState.SearchingFood ? PheromonType.Food : PheromonType.Home
-      const pheromon = new Pheromon(this.x, this.y, pheromonType)
+      const intensity = Math.max(0, 1 - this.timeInState / (GAME_PHEROMONS_LAYING_TIME * 1000))
+      if (intensity <= 0) return
+      const pheromon = new Pheromon(this.x, this.y, pheromonType, intensity)
       if (pheromonType === PheromonType.Food) ctx.foodPheromons.push(pheromon)
       else ctx.homePheromons.push(pheromon)
     }
