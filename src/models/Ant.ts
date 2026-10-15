@@ -1,6 +1,7 @@
 import {
   GAME_ANTS_WANDERING_STRENGTH,
   GAME_HEIGHT,
+  GAME_PHEROMONS_LAYING_TIME,
   GAME_PHEROMONS_TIME_DELAY,
   GAME_SENSORS_DISABLED,
   GAME_WIDTH,
@@ -40,6 +41,8 @@ export class Ant implements Entity {
   private rightSensor: Sensor
 
   public timeFromLastPheromon: number = 0
+  /** Time since last food pickup / drop, used to fade laid pheromons */
+  public timeInState = 0
 
   readonly maxSpeed = 8
   readonly sensorDistance = 14
@@ -100,7 +103,7 @@ export class Ant implements Entity {
         this.desiredDirection = AntDirection.Left
       else if (rightPheromonsStrength > leftPheromonsStrength)
         this.desiredDirection = AntDirection.Right
-      else if ((globalThis as any).CFG?.resetDir) this.desiredDirection = AntDirection.Forward
+      else this.desiredDirection = AntDirection.Forward
     }
 
     // Random rotations
@@ -190,8 +193,6 @@ export class Ant implements Entity {
     }
   }
 
-  public timeInState = 0
-
   createPheromon(ctx: GameContext, deltaTime: number) {
     this.timeFromLastPheromon += deltaTime
     this.timeInState += deltaTime
@@ -201,8 +202,7 @@ export class Ant implements Entity {
 
       const pheromonType =
         this.state === AntState.SearchingFood ? PheromonType.Food : PheromonType.Home
-      const T = ((globalThis as any).CFG?.budget ?? 0) * 1000
-      const intensity = T ? Math.max(0, 1 - this.timeInState / T) : 1
+      const intensity = Math.max(0, 1 - this.timeInState / (GAME_PHEROMONS_LAYING_TIME * 1000))
       if (intensity <= 0) return
       const pheromon = new Pheromon(this.x, this.y, pheromonType, intensity)
       if (pheromonType === PheromonType.Food) ctx.foodPheromons.push(pheromon)

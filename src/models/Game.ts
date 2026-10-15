@@ -5,6 +5,7 @@ import {
   GAME_ANTS,
   GAME_SHOW_PHEROMONS,
   GAME_SHOW_PERFORMANCE,
+  GAME_STEP_TIME,
 } from '../consts'
 import { round } from '../utils'
 import { Ant } from './Ant'
@@ -21,6 +22,7 @@ const pheromonsCtx = pheromonsSceneCanvas.getContext('2d')!
 export class Game {
   private isActive = true
   private lastRender = 0
+  private accumulatedTime = 0
 
   public colony: AntColony
   public ants: Ant[]
@@ -103,7 +105,12 @@ export class Game {
     this.times.push(now)
     this.fps = this.times.length
 
-    this.update(deltaTime)
+    // Fixed step keeps the simulation independent of the display refresh rate
+    this.accumulatedTime += Math.min(deltaTime, 100)
+    while (this.accumulatedTime >= GAME_STEP_TIME) {
+      this.update(GAME_STEP_TIME)
+      this.accumulatedTime -= GAME_STEP_TIME
+    }
     const updateEnd = performance.now()
     this.draw()
     const drawEnd = performance.now()
