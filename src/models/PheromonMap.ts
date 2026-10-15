@@ -54,9 +54,10 @@ export class PheromonMap {
   }
 
   /**
-   * Removes (in place) all pheromons matching the predicate.
+   * Removes (in place) all pheromons matching the predicate and returns them.
    */
   removeWhere(predicate: (pheromon: Pheromon) => boolean) {
+    const removed: Pheromon[] = []
     let kept = 0
 
     for (let i = 0; i < this.list.length; i++) {
@@ -64,12 +65,15 @@ export class PheromonMap {
 
       if (predicate(pheromon)) {
         this.removeFromCell(pheromon)
+        removed.push(pheromon)
       } else {
         this.list[kept++] = pheromon
       }
     }
 
     this.list.length = kept
+
+    return removed
   }
 
   private removeFromCell(pheromon: Pheromon) {
