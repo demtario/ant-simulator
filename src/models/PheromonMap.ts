@@ -1,72 +1,88 @@
-import { calcDistance } from '../utils'
+import { GAME_HEIGHT } from '../consts'
 import { Pheromon } from './Pheromon'
 
-export class PheromonMap {
-  private map: { [x: string]: { [y: string]: Pheromon[] } } = {}
+const cellKey = (x: number, y: number) => x * (GAME_HEIGHT + 1) + y
 
-  constructor(pheromons: Pheromon[] = []) {
-    pheromons.forEach((pheromon) => this.push(pheromon))
-  }
+/**
+ * Spatial index of pheromons. Cells are stored in a flat Map keyed by an integer,
+ * and all pheromons are additionally kept in a list, so iterating, counting and
+ * pruning dead ones do not allocate or rebuild the structure.
+ */
+export class PheromonMap {
+  private cells = new Map<number, Pheromon[]>()
+  private list: Pheromon[] = []
 
   push(pheromon: Pheromon) {
-    if (!this.map[pheromon.x]) this.map[pheromon.x] = {}
+    const key = cellKey(pheromon.x, pheromon.y)
+    const cell = this.cells.get(key)
 
-    if (!this.map[pheromon.x][pheromon.y]) this.map[pheromon.x][pheromon.y] = []
+    if (cell) cell.push(pheromon)
+    else this.cells.set(key, [pheromon])
 
-    this.map[pheromon.x][pheromon.y].push(pheromon)
+    this.list.push(pheromon)
   }
 
-  remove(pheromon: Pheromon) {
-    if (!this.map[pheromon.x]) return
-
-    if (!this.map[pheromon.x][pheromon.y]) return
-
-    const index = this.map[pheromon.x][pheromon.y].indexOf(pheromon)
-
-    if (index === -1) return
-
-    this.map[pheromon.x][pheromon.y].splice(index, 1)
+  get(x: number, y: number): readonly Pheromon[] {
+    return this.cells.get(cellKey(x, y)) ?? []
   }
 
-  get(x: number, y: number) {
-    return this.map[x] && this.map[x][y] ? this.map[x][y] : []
-  }
-
-  getAllInCircle(x: number, y: number, radius: number) {
-    const result: Pheromon[] = []
+  /**
+   * Sum of `strength` of all pheromons within the radius. Does not allocate.
+   */
+  getStrengthInCircle(x: number, y: number, radius: number) {
+    const radiusSq = radius * radius
+    let sum = 0
 
     for (let searchedX = Math.floor(x - radius); searchedX < x + radius; searchedX++) {
       for (let searchedY = Math.floor(y - radius); searchedY < y + radius; searchedY++) {
-        this.get(searchedX, searchedY).forEach((pheromon) => {
-          return calcDistance({ x, y }, pheromon) <= radius ? result.push(pheromon) : null
-        })
+        const cell = this.cells.get(cellKey(searchedX, searchedY))
+        if (!cell) continue
+
+        for (let i = 0; i < cell.length; i++) {
+          const dx = cell[i].x - x
+          const dy = cell[i].y - y
+          if (dx * dx + dy * dy <= radiusSq) sum += cell[i].strength
+        }
       }
     }
 
-    return result
+    return sum
   }
 
   forEach(callback: (pheromon: Pheromon) => void) {
-    Object.keys(this.map).forEach((x) => {
-      Object.keys(this.map[x]).forEach((y) => {
-        this.map[x][y].forEach((pheromon) => callback(pheromon))
-      })
-    })
+    for (let i = 0; i < this.list.length; i++) callback(this.list[i])
   }
 
-  filter(callback: (pheromon: Pheromon) => boolean) {
-    const filtered: Pheromon[] = []
+  /**
+   * Removes (in place) all pheromons matching the predicate.
+   */
+  removeWhere(predicate: (pheromon: Pheromon) => boolean) {
+    let kept = 0
 
-    this.forEach((pheromon) => {
-      if (callback(pheromon)) filtered.push(pheromon)
-    })
+    for (let i = 0; i < this.list.length; i++) {
+      const pheromon = this.list[i]
 
-    return new PheromonMap(filtered)
+      if (predicate(pheromon)) {
+        this.removeFromCell(pheromon)
+      } else {
+        this.list[kept++] = pheromon
+      }
+    }
+
+    this.list.length = kept
+  }
+
+  private removeFromCell(pheromon: Pheromon) {
+    const key = cellKey(pheromon.x, pheromon.y)
+    const cell = this.cells.get(key)
+    if (!cell) return
+
+    const index = cell.indexOf(pheromon)
+    if (index !== -1) cell.splice(index, 1)
+    if (cell.length === 0) this.cells.delete(key)
   }
 
   get length() {
-    let length = 0
-    this.forEach(() => length++)
-    return length
+    return this.list.length
   }
 }
